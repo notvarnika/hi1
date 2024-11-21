@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Train Ticket Booking</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f2f2f2;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+        .container {
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            text-align: center;
+        }
+        select, input, button {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        .result {
+            margin-top: 20px;
+            text-align: center;
+        }
+    </style>
+    <script>
+        const trains = [
+            'Ajmer–Hazrat Nizamuddin Jan Shatabdi Express', 'Bareilly–Delhi Express', 'Devagiri Express', 'Dwarka Express',
+            'Guwahati–Chennai Egmore Express', 'Haridwar–Una Link Janshatabdi Express', 'Hazrat Nizamuddin–Kolhapur Express',
+            'Hyderabad–Mumbai Express', 'Indore–Dehradun Express', 'Jabalpur–New Delhi Express', 'Jaipur Superfast Express',
+            'Jhelum Express', 'Kanyakumari–Mumbai Express', 'Mewar Express', 'Mumbai Central–Ahmedabad Shatabdi Express',
+            'Mumbai Rajdhani Express', 'New Delhi–Amritsar Shatabdi Express', 'Punjab Mail', 'Ranchi–New Delhi Garib Rath Express',
+            'Sabarmati Express'
+        ];
+
+        const seatsAvailable = {
+            'Ajmer–Hazrat Nizamuddin Jan Shatabdi Express': 180,
+            'Bareilly–Delhi Express': 150,
+            'Devagiri Express': 200,
+            'Dwarka Express': 120,
+            'Guwahati–Chennai Egmore Express': 160,
+            'Haridwar–Una Link Janshatabdi Express': 140,
+            'Hazrat Nizamuddin–Kolhapur Express': 100,
+            'Hyderabad–Mumbai Express': 200,
+            'Indore–Dehradun Express': 80,
+            'Jabalpur–New Delhi Express': 90,
+            'Jaipur Superfast Express': 200,
+            'Jhelum Express': 75,
+            'Kanyakumari–Mumbai Express': 60,
+            'Mewar Express': 50,
+            'Mumbai Central–Ahmedabad Shatabdi Express': 200,
+            'Mumbai Rajdhani Express': 130,
+            'New Delhi–Amritsar Shatabdi Express': 110,
+            'Punjab Mail': 100,
+            'Ranchi–New Delhi Garib Rath Express': 150,
+            'Sabarmati Express': 120
+        };
+
+        function populateDropdown() {
+            const trainDropdown = document.getElementById("train");
+            trains.forEach((train) => {
+                const option = document.createElement("option");
+                option.value = train;
+                option.text = train;
+                trainDropdown.add(option);
+            });
+        }
+
+        function generateTicketNumbers(count) {
+            const ticketNumbers = [];
+            for (let i = 0; i < count; i++) {
+                ticketNumbers.push(Math.floor(100000 + Math.random() * 900000)); 
+            }
+            return ticketNumbers;
+        }
+
+        async function bookTickets() 
+        { const train = document.getElementById("train").value;
+         const numTickets = parseInt(document.getElementById("numTickets").value);
+          const ticketPrice = 400; 
+          const passengerName = document.getElementById("passengerName").value;
+           if (numTickets > seatsAvailable[train]) 
+           { document.getElementById("result").innerText = "Not enough seats available.";
+            return; 
+           } seatsAvailable[train] -= numTickets;
+             const totalCost = numTickets * ticketPrice; 
+             const ticketNumbers = generateTicketNumbers(numTickets); 
+             const response = await fetch('bookticket.php',
+              { method: 'POST', headers: { 'Content-Type': 'application/json' },
+               body: JSON.stringify({ train, ticketNumbers, numTickets, passengerName, totalCost }) });
+                const result = await response.json();
+                 if (result.status === 'success') 
+                 { document.getElementById("result").innerText = `You have booked ${numTickets} tickets for ${train}. Total cost: ₹${totalCost}. Ticket numbers: ${ticketNumbers.join(', ')}. Remaining seats: ${seatsAvailable[train]}`;
+
+                  } else 
+                  { document.getElementById("result").innerText = "An error occurred while booking tickets."; }
+}
+
+
+        document.addEventListener("DOMContentLoaded", populateDropdown);
+    </script>
+</head>
+<body>
+    <div class="container">
+        <h1>Train Ticket Booking</h1>
+        <form onsubmit="event.preventDefault(); bookTickets();">
+            <label for="train">Select Train:</label>
+            <select name="train" id="train"></select>
+            <label for="numTickets">Number of Tickets:</label>
+            <input type="number" id="numTickets" name="numTickets" min="1" max="200">
+            <label for="passengerName">Passenger Name:</label>
+            <input type="text" id="passengerName" name="passengerName">
+            <button type="submit">Book Tickets</button>
+        </form>
+        <div class="result" id="result"></div>
+    </div>
+</body>
+</html>
